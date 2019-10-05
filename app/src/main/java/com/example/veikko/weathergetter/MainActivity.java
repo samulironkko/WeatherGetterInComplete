@@ -1,5 +1,7 @@
 package com.example.veikko.weathergetter;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -14,12 +16,25 @@ import com.squareup.picasso.Picasso;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, WeatherEngine.WeatherDataAvailableInterface {
 
     WeatherEngine engine = new WeatherEngine(this);
+    String location;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findViewById(R.id.button).setOnClickListener(this);
+        sharedPreferences = this.getPreferences(Context.MODE_PRIVATE);
+        location = sharedPreferences.getString("previousLocation", "");
+        engine.getWeatherData(location);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("previousLocation", location);
+        editor.apply();
     }
 
     @Override
@@ -46,8 +61,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        EditText editor = (EditText) findViewById(R.id.editText);
-        engine.getWeatherData(editor.getText().toString());
+        EditText editText = (EditText) findViewById(R.id.editText);
+        location = editText.getText().toString();
+        engine.getWeatherData(location);
     }
 
     protected void updateUI()
